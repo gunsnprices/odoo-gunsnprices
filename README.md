@@ -36,14 +36,15 @@ and rounds per box are read for any brand. Ammunition brands are not detected.
 
 ## Versions
 
-| Branch | Odoo | Status |
-|--------|------|--------|
-| `18.0` | 18.0 | this branch |
-| `19.0` | 19.0 | same code, made with `tools/port_to.py 19.0` |
-| `20.0` | 20.0 | same code, made with `tools/port_to.py 20.0` (access rights become `security/ir.access.csv`) |
+| Branch | Odoo | What differs |
+|--------|------|--------------|
+| `18.0` | 18.0 | base branch: changes land here first |
+| `19.0` | 19.0 | `tools/port_to.py 19.0`: manifest version `19.0.x.y.z` |
+| `20.0` | 20.0 | `tools/port_to.py 20.0`: manifest version, access rights in `security/ir.access.csv` (Odoo 20 replaced `ir.model.access` with `ir.access`) |
 
-The module's tests pass on Odoo 18.0, 19.0 and 20.0 (Community, checked 2026-11-10, alone and together with Sales,
-Inventory, Purchase, Point of Sale and eCommerce with demo data).
+The Python code and views are the same on all three. The module's tests pass on Odoo 18.0, 19.0 and 20.0 (Community,
+checked 2026-11-10, alone and together with Sales, Inventory, Purchase, Point of Sale and eCommerce with demo data),
+and uninstalling it leaves no tables, columns or data behind.
 
 Odoo Online (SaaS) can't run it: third-party apps with Python code need Odoo.sh or an on-premise server.
 
@@ -100,7 +101,8 @@ Tools:
 
 - `tools/vendor_gunsnprices.py <wheel or src dir>` copies a parser release into `lib/gunsnprices`.
 - `tools/gen_caliber_data.py` regenerates `data/gnp_caliber_data.xml` from the bundled caliber list.
-- `tools/port_to.py <series>` adapts the module to another Odoo series (manifest version, access-rights format).
+- `tools/port_to.py <series>` adapts the module to another Odoo series (manifest version, access-rights format), in
+  either direction.
 - `tools/make_images.py <brand icon>` draws the icon and the store banner.
 
 Publishing on the Odoo Apps store: see [PUBLISHING_odoo.md](PUBLISHING_odoo.md).

@@ -86,14 +86,28 @@ def test_caliber_data_matches_bundled_list():
     assert sequences == list(range(1, 294))
 
 
-def test_access_rights_csv():
-    rows = list(csv.DictReader((MODULE / "security" / "ir.model.access.csv").open(encoding="utf-8")))
+SERIES = int(MANIFEST["version"].split(".")[0])
+
+
+def access_rights():
+    """{group: "crud" letters} from security/ir.model.access.csv (18.0, 19.0) or security/ir.access.csv (20.0+)."""
+    old, new = MODULE / "security" / "ir.model.access.csv", MODULE / "security" / "ir.access.csv"
+    path, other = (new, old) if SERIES >= 20 else (old, new)
+    assert f"security/{path.name}" in MANIFEST["data"], f"Odoo {SERIES}.0 loads access rights from {path.name}"
+    assert not other.exists(), f"{other.name} is the format of another series"
+    rows = list(csv.DictReader(path.open(encoding="utf-8")))
+    if path == new:
+        assert {r["model_id"] for r in rows} == {"gnp.caliber"}
+        return {r["group_id/id"]: r["operation"] for r in rows}
     assert {r["model_id:id"] for r in rows} == {"model_gnp_caliber"}
-    admin = next(r for r in rows if r["group_id:id"] == "base.group_system")
-    assert [admin[k] for k in ("perm_read", "perm_write", "perm_create", "perm_unlink")] == ["1"] * 4
-    for row in rows:
-        if row["group_id:id"] != "base.group_system":
-            assert (row["perm_write"], row["perm_create"], row["perm_unlink"]) == ("0", "0", "0")
+    perms = ("perm_create", "perm_read", "perm_write", "perm_unlink")
+    return {r["group_id:id"]: "".join(c for c, p in zip("crud", perms, strict=True) if r[p] == "1") for r in rows}
+
+
+def test_access_rights_csv():
+    # everyone reads the caliber list, only administrators change it
+    assert access_rights() == {
+        "base.group_user": "r", "base.group_portal": "r", "base.group_public": "r", "base.group_system": "crud"}
 
 
 # --- store page (static/description/index.html) ------------------------------------------------------------------------
@@ -192,3 +206,19 @@ def test_port_to_20_converts_access_rights(tmp_path):
     assert {r["model_id"] for r in rows} == {"gnp.caliber"}
     assert {r["group_id/id"]: r["operation"] for r in rows} == {
         "base.group_user": "r", "base.group_portal": "r", "base.group_public": "r", "base.group_system": "crud"}
+
+
+def test_port_round_trip(tmp_path):
+    """Porting to another series and back gives the same files, byte for byte."""
+    module = tmp_path / "gunsnprices_product_specs"
+    shutil.copytree(MODULE, module, ignore=shutil.ignore_patterns("__pycache__"))
+    before = {p.relative_to(module): p.read_bytes() for p in module.rglob("*") if p.is_file()}
+    port_to.port("18.0" if SERIES >= 20 else "20.0", module)
+    port_to.port(f"{SERIES}.0", module)
+    assert {p.relative_to(module): p.read_bytes() for p in module.rglob("*") if p.is_file()} == before
+
+
+def test_port_refuses_record_rules():
+    with pytest.raises(SystemExit):
+        port_to.ir_access_to_acl("id,name,model_id,group_id/id,operation,domain\n"
+                                 "rule,rule,gnp.caliber,,r,\"[('active', '=', True)]\"\n")

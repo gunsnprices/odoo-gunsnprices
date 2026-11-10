@@ -18,10 +18,10 @@ The store lists apps for 20.0 already (browse filter "series=20.0":
 https://apps.odoo.com/apps/modules/browse?series=20.0). Python: 18.0 and 19.0 need 3.10 or later, 20.0 needs 3.12
 or later (https://www.odoo.com/documentation/20.0/administration/on_premise/source.html).
 
-Plan: publish the three supported series, 18.0, 19.0 and 20.0, one branch each. This repository has the 18.0
-branch. 19.0 and 20.0 are the same code after `tools/port_to.py`, which changes the manifest version and, for 20.0,
-turns `security/ir.model.access.csv` into `security/ir.access.csv`. Odoo 20 replaced `ir.model.access` with
-`ir.access`.
+Plan: publish the three supported series, 18.0, 19.0 and 20.0, one branch each. The local repository has all three
+branches. 19.0 and 20.0 are 18.0 plus one commit made by `tools/port_to.py`, which changes the manifest version and,
+for 20.0, turns `security/ir.model.access.csv` into `security/ir.access.csv`: Odoo 20 has no `ir.model.access` model
+any more, access rights are `ir.access` records.
 
 ## Repository layout the store expects
 
@@ -30,35 +30,29 @@ turns `security/ir.model.access.csv` into `security/ir.access.csv`. Odoo 20 repl
   (https://www.odoo.com/forum/help-1/repository-module-odoo-apps-260555). Here that folder is
   `gunsnprices_product_specs/`. `tools/`, `tests/` and `.github/` have no manifest and are not modules.
 - One branch per Odoo series, named after the series (`18.0`, `19.0`, `20.0`). Each branch is registered separately
-  with `#<branch>` at the end of the URL. The FAQ example is `ssh://git@github.com/odoo/odoo#9.0`; the
-  one-branch-per-version advice comes from a forum answer
-  (https://www.odoo.com/de_DE/forum/hilfe-1/update-apps-to-v18-267281). *Unconfirmed: whether a branch with
-  another name is refused.*
+  with `#<branch>` at the end of the URL. The FAQ example is `ssh://git@github.com/odoo/odoo#9.0`; the forum answer
+  at https://www.odoo.com/de_DE/forum/hilfe-1/update-apps-to-v18-267281 says "create branches in the repository for
+  example branch 17.0 and 18.0", "register both the branches in the apps dashboard" and "ensure to add branch name
+  while adding the repo". *Unconfirmed: whether a branch with another name is refused.*
 - Keep the same technical name (`gunsnprices_product_specs`) on every branch. The guidelines say to use the same
   module name for each Odoo version (https://apps.odoo.com/apps/vendor-guidelines).
 
 ## Steps
 
-1. **Create the GitHub repository**, public, for example `github.com/gunsnprices/odoo-gunsnprices`, and push:
+1. **Create the GitHub repository**, public, for example `github.com/gunsnprices/odoo-gunsnprices`, and push the
+   three branches (CI runs the Odoo tests for the series named by the branch):
 
    ```sh
    git remote add origin git@github.com:gunsnprices/odoo-gunsnprices.git
-   git push -u origin 18.0
+   git push -u origin 18.0 19.0 20.0
    ```
 
-2. **Make the 19.0 and 20.0 branches** (CI runs the Odoo tests for the series named by the branch):
+   On GitHub, set `18.0` as the default branch (the first push may make it so already).
 
-   ```sh
-   git switch -c 19.0 18.0 && python tools/port_to.py 19.0 && git commit -am "Port to Odoo 19.0" && git push -u origin 19.0
-   git switch -c 20.0 18.0 && python tools/port_to.py 20.0 && git add -A && git commit -m "Port to Odoo 20.0" && git push -u origin 20.0
-   ```
-
-   Later fixes go on 18.0 first and are merged or cherry-picked forward.
-
-3. **Sign in** at odoo.com with the account that will own the listing (the vendor account), then open
+2. **Sign in** at odoo.com with the account that will own the listing (the vendor account), then open
    https://apps.odoo.com/apps/upload. Registering a repository requires being logged in.
 
-4. **Register each branch** with its SSH URL (format from the FAQ, https://apps.odoo.com/apps/faq):
+3. **Register each branch** with its SSH URL (format from the FAQ, https://apps.odoo.com/apps/faq):
 
    ```
    ssh://git@github.com/gunsnprices/odoo-gunsnprices#18.0
@@ -70,19 +64,21 @@ turns `security/ir.model.access.csv` into `security/ir.access.csv`. Odoo 20 repl
    port … if no port is to be defined, use slash to separate gitServer from mypath". Its GitHub example has no
    `.git` suffix. *Unconfirmed: whether `.git` is accepted; leave it out.*
 
-5. **Access.** For a private repository, Odoo must be allowed to read it: "If you are on Github, you can simply
+4. **Access.** For a private repository, Odoo must be allowed to read it: "If you are on Github, you can simply
    authorize our online-odoo user (NOT odoo-online) on your repository (the authorization must be done on the
    repository specifically, not the entire company)" (https://apps.odoo.com/apps/faq). For GitLab, add
    `OdooApps (apps@odoo.com)`. For Bitbucket and other hosts, use the SSH key from
    https://apps.odoo.com/apps/repository-keys. *Unconfirmed: whether a public repository needs anything. Adding
    `online-odoo` as a read-only collaborator does no harm.*
 
-6. **Scan.** The store scans the registered branches. The vendor dashboard (https://apps.odoo.com/apps/dashboard/repos)
-   has a manual scan button (forum: https://www.odoo.com/forum/help-1/manual-repo-scan-is-not-working-in-appsodoocom-290855).
-   *Unconfirmed: the automatic rescan schedule. A forum post suggests daily.* "A good manifest is essential as any
-   error will unpublish all the modules from your repository" (https://apps.odoo.com/apps/vendor-guidelines).
+5. **Scan.** The store scans the registered branches. The vendor dashboard (https://apps.odoo.com/apps/dashboard/repos)
+   has a manual scan button; one forum user reported that it did nothing for them, with no official answer
+   (https://www.odoo.com/forum/help-1/manual-repo-scan-is-not-working-in-appsodoocom-290855). *Unconfirmed: the
+   automatic rescan schedule; no official page states it.* If nothing shows up, write to apps@odoo.com. "A good
+   manifest is essential as any error will unpublish all the modules from your repository"
+   (https://apps.odoo.com/apps/vendor-guidelines).
 
-7. **Check the listing**, expected at https://apps.odoo.com/apps/modules/18.0/gunsnprices_product_specs (and
+6. **Check the listing**, expected at https://apps.odoo.com/apps/modules/18.0/gunsnprices_product_specs (and
    `/19.0/`, `/20.0/`):
    - icon `static/description/icon.png`;
    - cover from the manifest `images` key (`static/description/banner.png`, 560×280);
@@ -91,8 +87,19 @@ turns `security/ir.model.access.csv` into `security/ir.access.csv`. Odoo 20 repl
      pages; seen on https://apps.odoo.com/apps/modules/18.0/web_responsive;
    - license LGPL-3, price Free.
 
-8. **Updates:** bump `version` in the manifest (for example `18.0.1.0.1`), update CHANGELOG.md, push. The store picks
-   it up at the next scan, or use the manual scan.
+7. **Updates:** make the change on 18.0, bump `version` in the manifest (for example `18.0.1.0.1`), update
+   CHANGELOG.md, then carry it to the other branches:
+
+   ```sh
+   git switch 19.0 && git merge 18.0      # or git cherry-pick <commit>
+   git switch 20.0 && git merge 18.0
+   ```
+
+   If the manifest version line conflicts, take the 18.0 side and run `python tools/port_to.py 19.0` (or `20.0`)
+   again: it only rewrites the series prefix (`18.0.1.0.1` -> `19.0.1.0.1`). On 20.0, a changed
+   `security/ir.model.access.csv` comes back as a modify/delete conflict: keep the file, then
+   `python tools/port_to.py 20.0` converts it to `ir.access.csv` again. Run `pytest` on each branch, push all three.
+   The store picks the new versions up at the next scan, or use the manual scan.
 
 ## Rules that apply to this module
 
