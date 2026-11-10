@@ -1,0 +1,17 @@
+# Tooling only (lint and the tests that run without Odoo). The Odoo module is gunsnprices_product_specs/.
+
+[tool.ruff]
+line-length = 125
+target-version = "py310"
+# lib/gunsnprices is the bundled upstream parser, kept byte-for-byte (one patched line)
+extend-exclude = ["gunsnprices_product_specs/lib"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]        # Odoo imports submodules for their side effects
+"__manifest__.py" = ["B018"]    # a manifest is a bare dict
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

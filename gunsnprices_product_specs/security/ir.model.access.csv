@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gnp_caliber_user,gnp.caliber user,model_gnp_caliber,base.group_user,1,0,0,0
+access_gnp_caliber_portal,gnp.caliber portal,model_gnp_caliber,base.group_portal,1,0,0,0
+access_gnp_caliber_public,gnp.caliber public,model_gnp_caliber,base.group_public,1,0,0,0
+access_gnp_caliber_system,gnp.caliber admin,model_gnp_caliber,base.group_system,1,1,1,1

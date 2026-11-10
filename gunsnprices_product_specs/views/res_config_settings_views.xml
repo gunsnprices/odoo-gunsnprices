@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_gnp_specs" model="ir.ui.view">
+        <field name="name">res.config.settings.form.gnp.specs</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Firearm Specs" string="Firearm Specs" name="gunsnprices_product_specs" groups="base.group_system">
+                    <block title="Fill Specs from Name" name="gnp_fill_block">
+                        <setting id="gnp_overwrite_setting"
+                                 help="Off: only empty fields are filled. On: values found in the name replace the current ones. Fields with nothing found keep their value either way.">
+                            <field name="gnp_overwrite_specs"/>
+                        </setting>
+                        <setting id="gnp_fill_on_create_setting"
+                                 help="Read the name of every new product, including products created by an import. Only empty fields are filled.">
+                            <field name="gnp_fill_on_create"/>
+                        </setting>
+                    </block>
+                    <block title="Calibers" name="gnp_caliber_block">
+                        <setting id="gnp_calibers_setting" string="Caliber List"
+                                 help="293 calibers with the spellings retailers use. Add your own or archive the ones you don't sell.">
+                            <button name="%(action_gnp_caliber)d" type="action" string="Calibers" icon="oi-arrow-right" class="btn-link"/>
+                        </setting>
+                        <setting id="gnp_parser_setting" string="Title Parser"
+                                 help="Runs inside Odoo; product names are not sent anywhere.">
+                            <field name="gnp_parser_info" readonly="1"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_view_gnp_specs" model="ir.ui.view">
+        <field name="name">product.template.form.gnp.specs</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_information']" position="after">
+                <page string="Specs" name="gnp_specs">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <button name="action_gnp_fill_specs" type="object" string="Fill Specs from Name"
+                                icon="fa-magic" class="btn-secondary"/>
+                        <span class="text-muted">Reads the product name: model, caliber, magazine capacity, barrel length, rounds per box.</span>
+                    </div>
+                    <group>
+                        <group string="Product" name="gnp_product">
+                            <field name="gnp_product_kind"/>
+                            <field name="gnp_brand"/>
+                            <field name="gnp_model_family" invisible="gnp_product_kind == 'ammo' and not gnp_model_family"/>
+                            <field name="gnp_model" invisible="gnp_product_kind == 'ammo' and not gnp_model"/>
+                            <field name="gnp_generation" invisible="gnp_product_kind == 'ammo' and not gnp_generation"/>
+                            <field name="gnp_magazine_capacity" invisible="gnp_product_kind == 'ammo' and not gnp_magazine_capacity"/>
+                            <field name="gnp_barrel_length" invisible="gnp_product_kind == 'ammo' and not gnp_barrel_length"/>
+                        </group>
+                        <group string="Caliber" name="gnp_caliber">
+                            <field name="gnp_caliber_id" options="{'no_create': True}"/>
+                            <field name="gnp_other_caliber_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="gnp_caliber_type" invisible="not gnp_caliber_id"/>
+                            <field name="gnp_rounds_per_box" invisible="gnp_product_kind == 'firearm' and not gnp_rounds_per_box"/>
+                            <field name="gnp_cost_per_round" invisible="not gnp_rounds_per_box"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_tree_view_gnp_specs" model="ir.ui.view">
+        <field name="name">product.template.list.gnp.specs</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='list_price']" position="after">
+                <field name="gnp_product_kind" string="Firearm/Ammo" optional="hide"/>
+                <field name="gnp_model" optional="hide"/>
+                <field name="gnp_caliber_id" optional="hide"/>
+                <field name="gnp_magazine_capacity" string="Capacity" optional="hide" invisible="not gnp_magazine_capacity"/>
+                <field name="gnp_barrel_length" string="Barrel (in)" optional="hide" invisible="not gnp_barrel_length"/>
+                <field name="gnp_rounds_per_box" string="Rounds/Box" optional="hide" invisible="not gnp_rounds_per_box"/>
+                <field name="gnp_cost_per_round" string="Per Round" optional="hide" invisible="not gnp_rounds_per_box"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_search_view_gnp_specs" model="ir.ui.view">
+        <field name="name">product.template.search.gnp.specs</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='categ_id']" position="after">
+                <field name="gnp_caliber_id" string="Caliber"
+                       filter_domain="['|', ('gnp_caliber_id', 'ilike', self), ('gnp_other_caliber_ids', 'ilike', self)]"/>
+                <field name="gnp_model" string="Model"
+                       filter_domain="['|', '|', ('gnp_model', 'ilike', self), ('gnp_model_family', 'ilike', self), ('gnp_brand', 'ilike', self)]"/>
+            </xpath>
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter string="Firearms" name="gnp_firearms" domain="[('gnp_product_kind', '=', 'firearm')]"/>
+                <filter string="Ammunition" name="gnp_ammo" domain="[('gnp_product_kind', '=', 'ammo')]"/>
+                <filter string="No Caliber" name="gnp_no_caliber" domain="[('gnp_caliber_id', '=', False)]"/>
+                <group>
+                    <filter string="Caliber" name="gnp_groupby_caliber" context="{'group_by': 'gnp_caliber_id'}"/>
+                    <filter string="Caliber Class" name="gnp_groupby_caliber_type" context="{'group_by': 'gnp_caliber_type'}"/>
+                    <filter string="Brand" name="gnp_groupby_brand" context="{'group_by': 'gnp_brand'}"/>
+                    <filter string="Model Family" name="gnp_groupby_model_family" context="{'group_by': 'gnp_model_family'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

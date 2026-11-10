@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="gnp_caliber_view_list" model="ir.ui.view">
+        <field name="name">gnp.caliber.list</field>
+        <field name="model">gnp.caliber</field>
+        <field name="arch" type="xml">
+            <list string="Calibers">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="caliber_type"/>
+                <field name="code" optional="hide"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="gnp_caliber_view_form" model="ir.ui.view">
+        <field name="name">gnp.caliber.form</field>
+        <field name="model">gnp.caliber</field>
+        <field name="arch" type="xml">
+            <form string="Caliber">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_products" type="object" class="oe_stat_button" icon="fa-cubes">
+                            <field name="product_count" widget="statinfo" string="Products"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. 9×19mm Parabellum"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="caliber_type"/>
+                            <field name="code"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="reference_url" widget="url"/>
+                        </group>
+                    </group>
+                    <field name="aliases" placeholder="One spelling per line, e.g. 9mm Luger"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="gnp_caliber_view_search" model="ir.ui.view">
+        <field name="name">gnp.caliber.search</field>
+        <field name="model">gnp.caliber</field>
+        <field name="arch" type="xml">
+            <search string="Calibers">
+                <field name="name" string="Caliber" filter_domain="[('display_name', 'ilike', self)]"/>
+                <filter string="Handgun" name="handgun" domain="[('caliber_type', '=', 'handgun')]"/>
+                <filter string="Rifle" name="rifle" domain="[('caliber_type', '=', 'rifle')]"/>
+                <filter string="Rimfire" name="rimfire" domain="[('caliber_type', '=', 'rimfire')]"/>
+                <filter string="Shotgun" name="shotgun" domain="[('caliber_type', '=', 'shotgun')]"/>
+                <filter string="Airgun" name="airgun" domain="[('caliber_type', '=', 'airgun')]"/>
+                <filter string="Muzzleloader" name="muzzleloader" domain="[('caliber_type', '=', 'muzzleloader')]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Class" name="groupby_caliber_type" context="{'group_by': 'caliber_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_gnp_caliber" model="ir.actions.act_window">
+        <field name="name">Calibers</field>
+        <field name="res_model">gnp.caliber</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="gnp_caliber_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add a caliber</p>
+            <p>The module comes with 293 calibers. Products are matched to them when you fill specs from product names.</p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint-and-unit:
+    name: Lint and tests without Odoo (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      # gunsnprices from PyPI lets tests/test_package.py compare the bundled copy with the release
+      - run: pip install ruff pytest lxml docutils gunsnprices==0.1.2
+      - run: ruff check .
+      - run: python -m compileall -q gunsnprices_product_specs tools tests
+      - run: pytest -q
+
+  odoo:
+    name: Odoo tests (optional)
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: addons
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Odoo series from the branch name (18.0, 19.0, 20.0 ...)
+        run: |
+          ref="${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
+          if [[ "$ref" =~ ^[0-9]+\.0$ ]]; then series="$ref"; else series="18.0"; fi
+          echo "ODOO_SERIES=$series" >> "$GITHUB_ENV"
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libpq-dev libldap2-dev libsasl2-dev
+      - run: git clone --depth 1 --branch "$ODOO_SERIES" https://github.com/odoo/odoo.git odoo
+      - run: pip install -r odoo/requirements.txt
+      - name: Install the module and run its tests
+        run: |
+          python odoo/odoo-bin -d test --db_host localhost --db_user odoo --db_password odoo \
+            --addons-path "$GITHUB_WORKSPACE/addons,odoo/addons,odoo/odoo/addons" \
+            -i gunsnprices_product_specs --test-enable --test-tags /gunsnprices_product_specs \
+            --stop-after-init --log-level=test

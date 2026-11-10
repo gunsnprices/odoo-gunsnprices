@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- "Fill Specs from Name" in the Actions menu of product lists and forms (one product or a selection) -->
+    <record id="action_server_fill_specs_template" model="ir.actions.server">
+        <field name="name">Fill Specs from Name</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="binding_model_id" ref="product.model_product_template"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_gnp_fill_specs()</field>
+    </record>
+
+    <record id="action_server_fill_specs_variant" model="ir.actions.server">
+        <field name="name">Fill Specs from Name</field>
+        <field name="model_id" ref="product.model_product_product"/>
+        <field name="binding_model_id" ref="product.model_product_product"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_gnp_fill_specs()</field>
+    </record>
+</odoo>
