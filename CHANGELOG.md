@@ -14,7 +14,8 @@ First release.
   selection), with a summary notification.
 - Settings: overwrite existing specs, fill specs when products are created or imported; parser version shown.
 - 293 calibers (`gnp.caliber`) with retailer spellings; name search and CSV import understand them
-  ("9mm Luger", "300 blk", "12ga").
+  ("9mm Luger", "300 blk", "12ga"). A caliber that products use can be archived but not deleted; uninstalling the
+  module removes its calibers and fields cleanly.
 - Search filters and group-by for caliber, caliber class, brand and model family; optional list columns.
 - Bundled title parser: gunsnprices 0.1.2 (MIT code, CC BY 4.0 data). A newer 0.1.x installed with pip is used
   instead.

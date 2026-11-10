@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 
-from odoo import fields, models
+from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 from ..parser import gnp
 
@@ -54,6 +55,14 @@ class GnpCaliber(models.Model):
 
     def _products_domain(self):
         return ["|", ("gnp_caliber_id", "in", self.ids), ("gnp_other_caliber_ids", "in", self.ids)]
+
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_used_by_products(self):
+        """A caliber that products use is archived, not deleted (the database link itself is "set null", so
+        uninstalling the module can remove the calibers without errors)."""
+        templates = self.env["product.template"].with_context(active_test=False)
+        if templates.search_count(self._products_domain(), limit=1):
+            raise UserError(self.env._("Products use this caliber. Archive it instead of deleting it."))
 
     def _compute_product_count(self):
         templates = self.env["product.template"]

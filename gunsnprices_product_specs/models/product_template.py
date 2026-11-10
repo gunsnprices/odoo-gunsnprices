@@ -45,7 +45,9 @@ class ProductTemplate(models.Model):
     gnp_model_family = fields.Char(string="Model Family", help='For example "Glock 19".')
     gnp_model = fields.Char(string="Model", help='Most specific model, for example "Glock 19 Gen 5 MOS".')
     gnp_generation = fields.Char(string="Generation", help='"5", "V", "V3" ...')
-    gnp_caliber_id = fields.Many2one("gnp.caliber", string="Caliber", index=True, ondelete="restrict")
+    # "set null" in the database so that uninstalling can drop the calibers; deleting a caliber in use is refused
+    # by gnp.caliber._unlink_except_used_by_products
+    gnp_caliber_id = fields.Many2one("gnp.caliber", string="Caliber", index=True, ondelete="set null")
     gnp_other_caliber_ids = fields.Many2many(
         "gnp.caliber", "product_template_gnp_caliber_rel", "product_tmpl_id", "caliber_id",
         string="Other Calibers",

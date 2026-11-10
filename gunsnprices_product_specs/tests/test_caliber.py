@@ -39,6 +39,21 @@ class TestCaliber(TransactionCase):
         with mute_logger("odoo.sql_db"), self.assertRaises(IntegrityError), self.cr.savepoint():
             self.env["gnp.caliber"].create({"name": "Duplicate", "code": "9x19mmparabellum", "caliber_type": "handgun"})
 
+    def test_caliber_in_use_cannot_be_deleted(self):
+        from odoo.exceptions import UserError
+        nine = self.env.ref("gunsnprices_product_specs.caliber_9x19mmparabellum")
+        self.env["product.template"].create({"name": "Test product", "gnp_caliber_id": nine.id})
+        with self.assertRaises(UserError):
+            nine.unlink()
+        other = self.env.ref("gunsnprices_product_specs.caliber_12gauge")
+        self.env["product.template"].create(
+            {"name": "Archived test product", "active": False, "gnp_other_caliber_ids": [(6, 0, other.ids)]})
+        with self.assertRaises(UserError):
+            other.unlink()
+        spare = self.env["gnp.caliber"].create({"name": "Test caliber", "code": "testcaliber", "caliber_type": "rifle"})
+        spare.unlink()
+        self.assertFalse(spare.exists())
+
     def test_product_count_and_action(self):
         nine = self.env.ref("gunsnprices_product_specs.caliber_9x19mmparabellum")
         before = nine.product_count

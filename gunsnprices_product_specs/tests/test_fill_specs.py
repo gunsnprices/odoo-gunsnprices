@@ -100,6 +100,18 @@ class TestFillSpecs(TransactionCase):
         self.assertEqual(template.gnp_model_family, "S&W M&P15")
         self.assertEqual(variant.gnp_caliber_id, self.caliber("5-56x45mmnato"))
 
+    def test_variant_form(self):
+        # the variant form is built on the template form, so it gets the Specs tab and its button
+        with Form(self.env["product.product"]) as form:
+            form.name = "Glock 17 Gen5 9mm 4.49in 17+1"
+            form.gnp_magazine_capacity = 17
+        variant = form.save()
+        arch = self.env["product.product"].get_view(view_type="form")["arch"]
+        self.assertIn('name="action_gnp_fill_specs"', arch)
+        variant.action_gnp_fill_specs()
+        self.assertEqual(variant.product_tmpl_id.gnp_model_family, "Glock 17")
+        self.assertEqual(variant.gnp_magazine_capacity, 17)
+
     def test_glock_part_number(self):
         template = self.Template.create({"name": "Glock 19 9mm Pistol", "default_code": "PA195S203MOS"})
         template.action_gnp_fill_specs()
